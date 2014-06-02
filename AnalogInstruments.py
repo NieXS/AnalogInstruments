@@ -17,7 +17,10 @@ import ac
 import acsys
 import math
 import os
+#import ctypes
+#import socket
 from sm_nfo.sim_info import SimInfo
+from telemetry_client import InternalTelemetryClient
 sim_info = SimInfo()
 import configparser
 
@@ -36,6 +39,8 @@ post_total_time = 2
 posting = False
 dt_ratio = 1
 draw_boost_gauge = True
+		
+telemetry_client = InternalTelemetryClient()
 
 def parse_color(a):
 	if len(a) != 9:
@@ -61,6 +66,7 @@ def acMain(ac_version):
 	global flt_label2, frt_label2, rlt_label2, rrt_label2
 	global fuel_warning_label
 	global config
+	global telemetry_client
 	config_file = configparser.ConfigParser()
 	config_file.read('apps/python/AnalogInstruments/settings.ini')
 	config = config_file[config_file['settings']['theme']]
@@ -200,6 +206,9 @@ def acMain(ac_version):
 		ac.setPosition(fuel_warning_label,fuel_pivot_x - 6,fuel_pivot_y - 30)
 		ac.setBackgroundTexture(fuel_warning_label,fuel_icon_warning_path)
 	return "Analog Instruments"
+
+def acShutdown():
+	telemetry_client.disconnect()
 
 def drawOdometer():
 	global posting
@@ -957,20 +966,35 @@ def acUpdate(deltaT):
 	global fuel_warning_label, posting, post_time_elapsed, post, dt_ratio
 	global draw_boost_gauge
 	ac.setBackgroundOpacity(window,0)
+	ac.log("acUpdate()")
+	if have_setup:
+		ac.log("Trying to tick")
+		telemetry_client.tick()
 	if debug_mode:
-		ac.setText(debug_label,"%2.2f" % (ac.getCarState(0,acsys.CS.DriveTrainSpeed)/ac.getCarState(0,acsys.CS.SpeedKMH)))
+		ac.log("Setting text")
+		ac.setText(debug_label,"%s %s %s %s %s %s" % (telemetry_client.abs_enabled,telemetry_client.abs_in_action,telemetry_client.tc_enabled,telemetry_client.tc_in_action,telemetry_client.in_pit,telemetry_client.limiter))
 	if have_setup == 0:
+		telemetry_client.connect()
+		ac.log("Connected!")
 		carinfo_file = configparser.ConfigParser()
+		ac.log("Parsed config")
 		carinfo_file.read("apps/python/AnalogInstruments/carinfo.ini")
+		ac.log("Parsed config 2")
 		dt_ratio = float(carinfo_file[ac.getCarName(0)]['ratio'])
+		ac.log("dt_ratio")
 		indicated_max_speed = int(carinfo_file[ac.getCarName(0)]['top_speed'])
+		ac.log("max_speed")
 		if (not carinfo_file[ac.getCarName(0)].getboolean('has_turbo') or not draw_boost_gauge) and draw_background:
 			ac.setBackgroundTexture(window,background_image_path_noboost)
 			draw_boost_gauge = False
+		ac.log("tested has_turbo")
 		# Max fuel
 		max_fuel = sim_info.static.maxFuel
+		ac.log("max_fuel")
 		car_model = sim_info.static.carModel
-		compound  = sim_info.graphics.tyreCompound
+		ac.log("car_model")
+		compound  = str(sim_info.graphics._tyreCompound)
+		ac.log("compound")
 		# Optimal tyre temp range as taken from that forum post
 		if "exos_125_s1" in car_model:
 			if "SuperSoft" in compound:
@@ -1022,6 +1046,7 @@ def acUpdate(deltaT):
 					x_offset = 15 - math.sin(rad)*15
 					y_offset = math.cos(rad)*5
 				ac.setPosition(label,math.cos(rad)*(tach_radius*4/5)+rpm_pivot_x-x_offset,rpm_pivot_y - math.sin(rad)*(tach_radius*4/5)-y_offset)
+			ac.log("Drew tach")
 		if draw_speedometer:
 			# Speedo setup
 			if imperial:
@@ -1037,15 +1062,19 @@ def acUpdate(deltaT):
 					x_offset = 23 - math.sin(rad)*23
 					y_offset = math.cos(rad)*5
 				ac.setPosition(label,math.cos(rad)*speedo_radius*4/5+speed_pivot_x-x_offset,speed_pivot_y - math.sin(rad)*speedo_radius*4/5-y_offset)
+			ac.log("Drew speedo")
 		have_setup = 1
+		ac.log("Setup done")
 		if post:
 			posting = True
+	ac.log("End of acUpdate()")
 
 def onWindowRender(deltaT):
 	global debug_label, indicated_max_rpm, max_rpm, indicated_max_speed, shift_light_drawn, sl_timer
 	global tach_radius, rpm_pivot_x, rpm_pivot_y, speedo_radius, speed_pivot_x, speed_pivot_y
 	global speedo_tl_x, speedo_tl_y, speedo_total_width, speedo_total_height, gear_color, gear_background, speedo_color, speedo_background
 	global posting, post_time_elapsed
+	ac.log("Rendering window")
 	if posting:
 		post_time_elapsed = post_time_elapsed + deltaT
 	if post_time_elapsed > post_total_time:
