@@ -34,6 +34,8 @@ fuel_icon_warning_path = "apps/python/AnalogInstruments/images/fuel icon warning
 post_time_elapsed = 0
 post_total_time = 2
 posting = False
+dt_ratio = 1
+draw_boost_gauge = True
 
 def parse_color(a):
 	if len(a) != 9:
@@ -52,7 +54,7 @@ def acMain(ac_version):
 	global speedo_bigline_color, speedo_smallline_color, speedo_needle_color1
 	global gauge_inner_radius, gauge_outer_radius, gauge_min_y, gauge_max_y
 	global boost_radius, fuel_radius, boost_pivot_y, fuel_pivot_y, boost_pivot_x, fuel_pivot_x, boost_needle_end, fuel_needle_end, boost_needle_color, fuel_needle_color
-	global odometer_fg, odometer_bg, g_meter_range, g_meter_x_anchor, g_meter_y_anchor, g_meter_opacity, window_width, window_height, background_image_path
+	global odometer_fg, odometer_bg, g_meter_range, g_meter_x_anchor, g_meter_y_anchor, g_meter_opacity, window_width, window_height, background_image_path, background_image_path_noboost
 	global tyre_monitor_opacity, g_meter_opacity
 	global window, debug_label, indicated_max_rpm
 	global flt_label1, frt_label1, rlt_label1, rrt_label1
@@ -160,6 +162,7 @@ def acMain(ac_version):
 	window_width  = int(config['window_width'])
 	window_height = int(config['window_height'])
 	background_image_path = config['background_path']
+	background_image_path_noboost = config['background_noboost_path']
 	window = ac.newApp("AnalogInstruments")
 	ac.setTitle(window," ")
 	ac.setBackgroundOpacity(window,0)
@@ -444,7 +447,7 @@ def drawTachometer(deltaT):
 
 def drawSpeedometer():
 	global posting, post_time_elapsed, post_total_time
-	speed = ac.getCarState(0,acsys.CS.DriveTrainSpeed) #Drivetrain speed seems to be about 75-90% of the real speed wtf
+	speed = ac.getCarState(0,acsys.CS.DriveTrainSpeed)/dt_ratio #Drivetrain speed seems to be about 75-90% of the real speed wtf
 	if imperial:
 		speed = speed / 1.632
 	# degree range: 190..-10
@@ -951,11 +954,19 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 def acUpdate(deltaT):
 	global window_width, have_setup, indicated_max_rpm, max_rpm, indicated_max_speed
 	global rpm_pivot_x, rpm_pivot_y, speed_pivot_x, speed_pivot_y, tach_radius, speedo_radius, max_fuel
-	global fuel_warning_label, posting, post_time_elapsed, post
+	global fuel_warning_label, posting, post_time_elapsed, post, dt_ratio
+	global draw_boost_gauge
 	ac.setBackgroundOpacity(window,0)
 	if debug_mode:
 		ac.setText(debug_label,"%2.2f" % (ac.getCarState(0,acsys.CS.DriveTrainSpeed)/ac.getCarState(0,acsys.CS.SpeedKMH)))
 	if have_setup == 0:
+		carinfo_file = configparser.ConfigParser()
+		carinfo_file.read("apps/python/AnalogInstruments/carinfo.ini")
+		dt_ratio = float(carinfo_file[ac.getCarName(0)]['ratio'])
+		indicated_max_speed = int(carinfo_file[ac.getCarName(0)]['top_speed'])
+		if (not carinfo_file[ac.getCarName(0)].getboolean('has_turbo') or not draw_boost_gauge) and draw_background:
+			ac.setBackgroundTexture(window,background_image_path_noboost)
+			draw_boost_gauge = False
 		# Max fuel
 		max_fuel = sim_info.static.maxFuel
 		car_model = sim_info.static.carModel
@@ -1013,9 +1024,8 @@ def acUpdate(deltaT):
 				ac.setPosition(label,math.cos(rad)*(tach_radius*4/5)+rpm_pivot_x-x_offset,rpm_pivot_y - math.sin(rad)*(tach_radius*4/5)-y_offset)
 		if draw_speedometer:
 			# Speedo setup
-			indicated_max_speed = 320 # This should vary depending on the car
 			if imperial:
-				indicated_max_speed = 200 # same speed
+				indicated_max_speed = int(indicated_max_speed/1.6) #TODO: round up to multiple of 20
 			# Speedo labels
 			for i in range(0,indicated_max_speed+1,20):
 				rad = math.radians(190 - (i/indicated_max_speed)*200.0)
