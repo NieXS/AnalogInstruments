@@ -32,9 +32,6 @@ tyre_optimal_temp = range(85,101)
 max_boost = 0.1
 max_fuel = 1
 fuel_icon_warning_path = "apps/python/AnalogInstruments/images/fuel icon warning.png"
-post_time_elapsed = 0
-post_total_time = 2
-posting = False
 dt_ratio = 1
 draw_boost_gauge = True
 		
@@ -47,7 +44,7 @@ def parse_color(a):
 		return [int(a[1:3],16)/255,int(a[3:5],16)/255,int(a[5:7],16)/255,int(a[7:9],16)/255]
 
 def acMain(ac_version):
-	global imperial, post, debug_mode, window_x_pos, window_y_pos, tyre_mon_xpos, tyre_mon_ypos
+	global imperial, debug_mode, window_x_pos, window_y_pos, tyre_mon_xpos, tyre_mon_ypos
 	global gear_color, gear_background, speed_color, speed_background, throttle_gauge_color, brake_gauge_color, clutch_gauge_color, boost_bar_color, fuel_bar_color
 	global draw_digital_speedo, draw_shift_light, draw_gear_indicator, draw_speedometer, draw_tachometer, draw_odometer, draw_g_meter, draw_boost_gauge
 	global draw_fuel_gauge, draw_throttle_gauge, draw_brake_gauge, draw_clutch_gauge, draw_tyre_monitor, draw_background
@@ -83,8 +80,6 @@ def acMain(ac_version):
 
 	# Change this to 'True' to have speed measured in MPH
 	imperial = config.getboolean('imperial')
-	# Change this to 'False' to disable the power-on self test (unfinished, silly)
-	post = config.getboolean('post')
 	# Debug mode (basically just some numbers)
 	debug_mode = config.getboolean('debug_mode')
 	# Main window positions, change those if you're not using a single monitor 1080p setup
@@ -288,8 +283,6 @@ def drawOdometer():
 	# zero-padding
 	while len(s) < 5:
 		s = "0" + s
-	if posting:
-		s = "888.8"
 	i = 0
 	for c in s:
 		if c != '.':
@@ -300,7 +293,7 @@ def drawOdometer():
 	ac.glQuad(root_x+48+22,root_y+30,4,4)
 
 def drawBoostGauge():
-	global max_boost, posting, post_time_elapsed, post_total_time
+	global max_boost
 	boost = ac.getCarState(0,acsys.CS.TurboBoost)
 	if boost > max_boost:
 		max_boost = boost
@@ -336,8 +329,6 @@ def drawBoostGauge():
 		ac.glEnd()
 	# Needle
 	rad = math.pi - rad
-	if posting:
-		rad = math.pi - math.pi*math.sin((post_time_elapsed/post_total_time)*math.pi)
 	bigend_x    = math.cos(rad)*boost_radius + boost_pivot_x
 	bigend_y    = boost_pivot_y - math.sin(rad)*boost_radius
 	littleend_x = math.cos(rad+math.pi)*boost_needle_end + boost_pivot_x
@@ -368,7 +359,6 @@ def drawBoostGauge():
 
 def drawFuelGauge():
 	global max_fuel, fuel_warning_label
-	global posting, post_total_time, post_time_elapsed
 	fuel = sim_info.physics.fuel
 	rad = (fuel/max_fuel)*math.pi # 180 deg range so it's easy
 	outer_radius = fuel_radius 
@@ -406,8 +396,6 @@ def drawFuelGauge():
 		ac.glEnd()
 	# Needle
 	rad = math.pi - rad
-	if posting:
-		rad = math.pi - math.pi*math.sin((post_time_elapsed/post_total_time)*math.pi)
 	bigend_x    = math.cos(rad)*fuel_radius + fuel_pivot_x
 	bigend_y    = fuel_pivot_y - math.sin(rad)*fuel_radius
 	littleend_x = math.cos(rad+math.pi)*fuel_needle_end + fuel_pivot_x
@@ -1024,7 +1012,7 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 def acUpdate(deltaT):
 	global window_width, have_setup, indicated_max_rpm, max_rpm, indicated_max_speed
 	global rpm_pivot_x, rpm_pivot_y, speed_pivot_x, speed_pivot_y, tach_radius, speedo_radius, max_fuel
-	global fuel_warning_label, posting, post_time_elapsed, post, dt_ratio
+	global fuel_warning_label, dt_ratio
 	global draw_boost_gauge
 	ac.setBackgroundOpacity(window,0)
 	if have_setup:
@@ -1113,14 +1101,11 @@ def acUpdate(deltaT):
 					y_offset = math.cos(rad)*5
 				ac.setPosition(label,math.cos(rad)*speedo_radius*4/5+speed_pivot_x-x_offset,speed_pivot_y - math.sin(rad)*speedo_radius*4/5-y_offset)
 		have_setup = 1
-		if post:
-			posting = True
 
 def onWindowRender(deltaT):
 	global debug_label, indicated_max_rpm, max_rpm, indicated_max_speed, shift_light_drawn, sl_timer
 	global tach_radius, rpm_pivot_x, rpm_pivot_y, speedo_radius, speed_pivot_x, speed_pivot_y
 	global speedo_tl_x, speedo_tl_y, speedo_total_width, speedo_total_height, gear_color, gear_background, speedo_color, speedo_background
-	global posting, post_time_elapsed
 	global abs_label, abs_off_label, tcs_label, tcs_off_label
 	global draw_abs_status, draw_tcs_status
 	global telemetry_client
@@ -1142,10 +1127,6 @@ def onWindowRender(deltaT):
 			ac.setPosition(tcs_label,0,0)
 		else:
 			ac.setPosition(tcs_label,-10000,-10000)
-	if posting:
-		post_time_elapsed = post_time_elapsed + deltaT
-	if post_time_elapsed > post_total_time:
-		posting = False
 	rpm = ac.getCarState(0,acsys.CS.RPM)
 	# Distance covered
 	if draw_odometer:
@@ -1187,8 +1168,6 @@ def onWindowRender(deltaT):
 			digit = "N"
 		elif gear == 0:
 			digit = "R"
-		if posting:
-			digit = "8"
 		drawNineSegment(gear_x,gear_y,gear_width,gear_height,digit,gear_color,gear_background)
 	# Digital speedo
 	if draw_digital_speedo:
@@ -1199,20 +1178,14 @@ def onWindowRender(deltaT):
 			speed = ac.getCarState(0,acsys.CS.SpeedMPH)
 		if speed >= 100:
 			hundred = "%d" % ((speed - (speed % 100))/100)
-		if posting:
-			hundred = '8'
 		drawNineSegment(speedo_tl_x,speedo_tl_y,speedo_total_width/3,speedo_total_height,hundred,speed_color,speed_background)
 		# Second Digit
 		ten = ''
 		if speed >= 10:
 			ten = "%d" % (((speed % 100) - (speed % 10))/10)
-		if posting:
-			ten = '8'
 		drawNineSegment(speedo_tl_x+speedo_total_width/3,speedo_tl_y,speedo_total_width/3,speedo_total_height,ten,speed_color,speed_background)
 		# Third Digit
 		dec = "%d" % (speed % 10)
-		if posting:
-			dec = '8'
 		drawNineSegment(speedo_tl_x+2*(speedo_total_width/3),speedo_tl_y,speedo_total_width/3,speedo_total_height,dec,speed_color,speed_background)
 	
 	# Brake Gauge
