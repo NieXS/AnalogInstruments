@@ -3,11 +3,9 @@ import socket
 import ac
 class TelemetryStructure(ctypes.Structure):
 	def to_bytes(self):
-		ac.log("to_bytes")
 		return (ctypes.c_char*ctypes.sizeof(self)).from_buffer_copy(self)
 	
 	def from_bytes(self,bytes):
-		ac.log("from_bytes")
 		fit = min(len(bytes),ctypes.sizeof(self))
 		ctypes.memmove(ctypes.addressof(self),bytes,fit)
 		
@@ -86,27 +84,20 @@ class InternalTelemetryClient:
 		self.handshake_done = False
 		self.connected = False
 	def connect(self):
-		ac.log("Connecting")
 		self.sock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 		handshake_data = Handshaker(4,1,0)
-		ac.log("Serializing")
 		ctypes.string_at(ctypes.addressof(handshake_data),ctypes.sizeof(handshake_data))
-		ac.log("Sending")
 		self.sock.sendto(handshake_data,self.address)
 		ac.log("Sent :-)")
 		self.connected = True
 	def tick(self):
-		ac.log("Ticking")
 		if not self.connected:
 			return
-		ac.log("Receiving")
 		data, server = self.sock.recvfrom(max(ctypes.sizeof(HandshakerResponse),ctypes.sizeof(RTCarInfo)))
 		if not self.handshake_done:
 			my_str = ctypes.create_string_buffer(data)
 			ac.log("%d %d" % (len(data),ctypes.sizeof(HandshakerResponse)))
-			ac.log("Casting")
 			handshake_reply = ctypes.cast(ctypes.pointer(my_str),ctypes.POINTER(HandshakerResponse)).contents
-			ac.log("Asserting")
 			ac.log("%d %d" % (handshake_reply.identifier,handshake_reply.version))
 			#assert handshake_reply.identifier == 4242
 			handshake = Handshaker(4,1,1)
