@@ -95,11 +95,6 @@ class InternalTelemetryClient:
 			return
 		data, server = self.sock.recvfrom(max(ctypes.sizeof(HandshakerResponse),ctypes.sizeof(RTCarInfo)))
 		if not self.handshake_done:
-			my_str = ctypes.create_string_buffer(data)
-			ac.log("%d %d" % (len(data),ctypes.sizeof(HandshakerResponse)))
-			handshake_reply = ctypes.cast(ctypes.pointer(my_str),ctypes.POINTER(HandshakerResponse)).contents
-			ac.log("%d %d" % (handshake_reply.identifier,handshake_reply.version))
-			#assert handshake_reply.identifier == 4242
 			handshake = Handshaker(4,1,1)
 			self.sock.sendto(handshake.to_bytes(),self.address)
 			self.handshake_done = True
