@@ -74,6 +74,7 @@ def acMain(ac_version):
 	global draw_abs_status, draw_tcs_status, abs_label, abs_off_label, tcs_label, tcs_off_label
 	global gear_x, gear_y, shift_light_x, shift_light_y, shift_light_radius, gear_width, gear_height
 	global tach_min_angle, tach_max_angle, speedo_min_angle, speedo_max_angle
+	global shift_light_on_color, shift_light_off_color
 	config_file = configparser.ConfigParser()
 	config_file.read('apps/python/AnalogInstruments/settings.ini')
 	config = config_file[config_file['settings']['theme']]
@@ -102,6 +103,8 @@ def acMain(ac_version):
 	clutch_gauge_color   = parse_color(config['clutch_gauge_color'])
 	boost_bar_color      = parse_color(config['boost_bar_color']) 
 	fuel_bar_color       = parse_color(config['fuel_bar_color'])
+	shift_light_on_color = parse_color(config['shift_light_on_color'])
+	shift_light_off_color = parse_color(config['shift_light_off_color'])
 	# Some more settings, hopefully pretty self-explanatory
 	draw_digital_speedo = config.getboolean('draw_digital_speedo')
 	draw_shift_light    = config.getboolean('draw_shift_light')
@@ -1164,9 +1167,9 @@ def onWindowRender(deltaT):
 		else:
 			sl_timer = sl_timer + deltaT
 		if max_rpm - rpm <= 500 and shift_light_drawn:
-			color = [1.0,0.0,0.0,1.0]
+			color = shift_light_on_color
 		else:
-			color = [0.0,0.0,0.0,0.5]
+			color = shift_light_off_color
 		for i in range(0,360,15):
 			ac.glBegin(2)
 			ac.glColor4f(color[0],color[1],color[2],color[3])
