@@ -55,7 +55,13 @@ def acMain(ac_version):
 	global speedo_total_width, speedo_total_height
 	global tach_redline_color, tach_bigline_color, tach_smallline_color, tach_needle_color1
 	global speedo_bigline_color, speedo_smallline_color, speedo_needle_color1
-	global gauge_inner_radius, gauge_outer_radius, gauge_min_y, gauge_max_y
+	global throttle_gauge_inner_radius, throttle_gauge_outer_radius, throttle_gauge_min_y, throttle_gauge_max_y
+	global brake_gauge_inner_radius, brake_gauge_outer_radius, brake_gauge_min_y, brake_gauge_max_y
+	global clutch_gauge_inner_radius, clutch_gauge_outer_radius, clutch_gauge_min_y, clutch_gauge_max_y
+	global throttle_gauge_root_x, throttle_gauge_root_y
+	global brake_gauge_root_x, brake_gauge_root_y
+	global clutch_gauge_root_x, clutch_gauge_root_y
+	global throttle_gauge_right, brake_gauge_right, clutch_gauge_right
 	global boost_radius, fuel_radius, boost_pivot_y, fuel_pivot_y, boost_pivot_x, fuel_pivot_x, boost_needle_end, fuel_needle_end, boost_needle_color, fuel_needle_color
 	global odometer_fg, odometer_bg, g_meter_range, g_meter_x_anchor, g_meter_y_anchor, g_meter_opacity, window_width, window_height, background_image_path, background_image_path_noboost
 	global tyre_monitor_opacity, g_meter_opacity
@@ -143,10 +149,29 @@ def acMain(ac_version):
 
 	# G-Meter: 500-820
 	# Brake/Throttle Max Y: 70 Min: 160
-	gauge_inner_radius = int(config['gauge_inner_radius'])
-	gauge_outer_radius = int(config['gauge_outer_radius'])
-	gauge_min_y        = int(config['gauge_min_y'])
-	gauge_max_y        = int(config['gauge_max_y'])
+	throttle_gauge_inner_radius = int(config['throttle_gauge_inner_radius'])
+	throttle_gauge_outer_radius = int(config['throttle_gauge_outer_radius'])
+	throttle_gauge_min_y        = int(config['throttle_gauge_min_y'])
+	throttle_gauge_max_y        = int(config['throttle_gauge_max_y'])
+	throttle_gauge_root_x       = int(config['throttle_gauge_root_x'])
+	throttle_gauge_root_y       = int(config['throttle_gauge_root_y'])
+	throttle_gauge_right        = config.getboolean('throttle_gauge_right')
+	
+	brake_gauge_inner_radius = int(config['brake_gauge_inner_radius'])
+	brake_gauge_outer_radius = int(config['brake_gauge_outer_radius'])
+	brake_gauge_min_y        = int(config['brake_gauge_min_y'])
+	brake_gauge_max_y        = int(config['brake_gauge_max_y'])
+	brake_gauge_root_x       = int(config['brake_gauge_root_x'])
+	brake_gauge_root_y       = int(config['brake_gauge_root_y'])
+	brake_gauge_right        = config.getboolean('brake_gauge_right')
+	
+	clutch_gauge_inner_radius = int(config['clutch_gauge_inner_radius'])
+	clutch_gauge_outer_radius = int(config['clutch_gauge_outer_radius'])
+	clutch_gauge_min_y        = int(config['clutch_gauge_min_y'])
+	clutch_gauge_max_y        = int(config['clutch_gauge_max_y'])
+	clutch_gauge_root_x       = int(config['clutch_gauge_root_x'])
+	clutch_gauge_root_y       = int(config['clutch_gauge_root_y'])
+	clutch_gauge_right        = config.getboolean('clutch_gauge_right')
 
 
 	boost_radius     = int(config['boost_radius'])
@@ -626,26 +651,26 @@ def drawTyreMonitor():
 
 def drawBrakeGauge():
 	global posting, post_time_elapsed, post_total_time
-	inner_min_rad = math.asin((rpm_pivot_y-gauge_min_y)/gauge_inner_radius)
-	inner_max_rad = math.asin((rpm_pivot_y-gauge_max_y)/gauge_inner_radius)
-	outer_min_rad = math.asin((rpm_pivot_y-gauge_min_y)/gauge_outer_radius)
-	outer_max_rad = math.asin((rpm_pivot_y-gauge_max_y)/gauge_outer_radius)
+	inner_min_rad = math.asin((brake_gauge_root_y-brake_gauge_min_y)/brake_gauge_inner_radius)
+	inner_max_rad = math.asin((brake_gauge_root_y-brake_gauge_max_y)/brake_gauge_inner_radius)
+	outer_min_rad = math.asin((brake_gauge_root_y-brake_gauge_min_y)/brake_gauge_outer_radius)
+	outer_max_rad = math.asin((brake_gauge_root_y-brake_gauge_max_y)/brake_gauge_outer_radius)
 	for i in range(0,int((ac.getCarState(0,acsys.CS.Brake))*100),1):
 		# p1 = inner, p2 = outer
 		# p3 = inner, p4 = outer
-		rad1 = (inner_max_rad-inner_min_rad)/100*i     + inner_min_rad
-		rad2 = (outer_max_rad-outer_min_rad)/100*i     + outer_min_rad
-		rad3 = (inner_max_rad-inner_min_rad)/100*(i+1) + inner_min_rad
-		rad4 = (outer_max_rad-outer_min_rad)/100*(i+1) + outer_min_rad
+		rad1 = (inner_max_rad-inner_min_rad)/100*i     + inner_min_rad + (math.pi if brake_gauge_right else 0)
+		rad2 = (outer_max_rad-outer_min_rad)/100*i     + outer_min_rad + (math.pi if brake_gauge_right else 0)
+		rad3 = (inner_max_rad-inner_min_rad)/100*(i+1) + inner_min_rad + (math.pi if brake_gauge_right else 0)
+		rad4 = (outer_max_rad-outer_min_rad)/100*(i+1) + outer_min_rad + (math.pi if brake_gauge_right else 0)
 		
-		p1_x = math.cos(rad1)*gauge_inner_radius + rpm_pivot_x
-		p1_y = rpm_pivot_y - math.sin(rad1)*gauge_inner_radius
-		p2_x = math.cos(rad2)*gauge_outer_radius + rpm_pivot_x
-		p2_y = rpm_pivot_y - math.sin(rad2)*gauge_outer_radius
-		p3_x = math.cos(rad3)*gauge_inner_radius + rpm_pivot_x
-		p3_y = rpm_pivot_y - math.sin(rad3)*gauge_inner_radius
-		p4_x = math.cos(rad4)*gauge_outer_radius + rpm_pivot_x
-		p4_y = rpm_pivot_y - math.sin(rad4)*gauge_outer_radius
+		p1_x = math.cos(rad1)*brake_gauge_inner_radius + brake_gauge_root_x
+		p1_y = brake_gauge_root_y - math.sin(rad1)*brake_gauge_inner_radius
+		p2_x = math.cos(rad2)*brake_gauge_outer_radius + brake_gauge_root_x
+		p2_y = brake_gauge_root_y - math.sin(rad2)*brake_gauge_outer_radius
+		p3_x = math.cos(rad3)*brake_gauge_inner_radius + brake_gauge_root_x
+		p3_y = brake_gauge_root_y - math.sin(rad3)*brake_gauge_inner_radius
+		p4_x = math.cos(rad4)*brake_gauge_outer_radius + brake_gauge_root_x
+		p4_y = brake_gauge_root_y - math.sin(rad4)*brake_gauge_outer_radius
 		
 		ac.glBegin(2)
 		ac.glColor4f(brake_gauge_color[0],brake_gauge_color[1],brake_gauge_color[2],brake_gauge_color[3])
@@ -662,26 +687,26 @@ def drawBrakeGauge():
 
 def drawThrottleGauge():
 	global posting, post_time_elapsed, post_total_time
-	inner_min_rad = math.asin((speed_pivot_y-gauge_min_y)/gauge_inner_radius)
-	inner_max_rad = math.asin((speed_pivot_y-gauge_max_y+1)/gauge_inner_radius)
-	outer_min_rad = math.asin((speed_pivot_y-gauge_min_y)/gauge_outer_radius)
-	outer_max_rad = math.asin((speed_pivot_y-gauge_max_y+1)/gauge_outer_radius)
+	inner_min_rad = math.asin((throttle_gauge_root_y-throttle_gauge_min_y)/throttle_gauge_inner_radius)
+	inner_max_rad = math.asin((throttle_gauge_root_y-throttle_gauge_max_y+1)/throttle_gauge_inner_radius)
+	outer_min_rad = math.asin((throttle_gauge_root_y-throttle_gauge_min_y)/throttle_gauge_outer_radius)
+	outer_max_rad = math.asin((throttle_gauge_root_y-throttle_gauge_max_y+1)/throttle_gauge_outer_radius)
 	for i in range(0,int((ac.getCarState(0,acsys.CS.Gas))*100),1):
 		# p1 = inner, p2 = outer
 		# p3 = inner, p4 = outer
-		rad1 = (inner_max_rad-inner_min_rad)/100*(100-i)     - inner_max_rad + math.pi
-		rad2 = (outer_max_rad-outer_min_rad)/100*(100-i)     - outer_max_rad + math.pi
-		rad3 = (inner_max_rad-inner_min_rad)/100*(100 - i+1) - inner_max_rad + math.pi
-		rad4 = (outer_max_rad-outer_min_rad)/100*(100 - i+1) - outer_max_rad + math.pi
+		rad1 = (inner_max_rad-inner_min_rad)/100*(100-i)     - inner_max_rad + (math.pi if throttle_gauge_right else 0)
+		rad2 = (outer_max_rad-outer_min_rad)/100*(100-i)     - outer_max_rad + (math.pi if throttle_gauge_right else 0)
+		rad3 = (inner_max_rad-inner_min_rad)/100*(100 - i+1) - inner_max_rad + (math.pi if throttle_gauge_right else 0)
+		rad4 = (outer_max_rad-outer_min_rad)/100*(100 - i+1) - outer_max_rad + (math.pi if throttle_gauge_right else 0)
 		
-		p1_x = math.cos(rad1)*gauge_inner_radius + speed_pivot_x
-		p1_y = speed_pivot_y - math.sin(rad1)*gauge_inner_radius
-		p2_x = math.cos(rad2)*gauge_outer_radius + speed_pivot_x
-		p2_y = speed_pivot_y - math.sin(rad2)*gauge_outer_radius
-		p3_x = math.cos(rad3)*gauge_inner_radius + speed_pivot_x
-		p3_y = speed_pivot_y - math.sin(rad3)*gauge_inner_radius
-		p4_x = math.cos(rad4)*gauge_outer_radius + speed_pivot_x
-		p4_y = speed_pivot_y - math.sin(rad4)*gauge_outer_radius
+		p1_x = math.cos(rad1)*throttle_gauge_inner_radius + throttle_gauge_root_x
+		p1_y = throttle_gauge_root_y - math.sin(rad1)*throttle_gauge_inner_radius
+		p2_x = math.cos(rad2)*throttle_gauge_outer_radius + throttle_gauge_root_x
+		p2_y = throttle_gauge_root_y - math.sin(rad2)*throttle_gauge_outer_radius
+		p3_x = math.cos(rad3)*throttle_gauge_inner_radius + throttle_gauge_root_x
+		p3_y = throttle_gauge_root_y - math.sin(rad3)*throttle_gauge_inner_radius
+		p4_x = math.cos(rad4)*throttle_gauge_outer_radius + throttle_gauge_root_x
+		p4_y = throttle_gauge_root_y - math.sin(rad4)*throttle_gauge_outer_radius
 		
 		ac.glBegin(2)
 		ac.glColor4f(throttle_gauge_color[0],throttle_gauge_color[1],throttle_gauge_color[2],throttle_gauge_color[3])
@@ -698,26 +723,26 @@ def drawThrottleGauge():
 
 def drawClutchGauge():
 	global posting, post_time_elapsed, post_total_time
-	inner_min_rad = math.asin((rpm_pivot_y-gauge_min_y)/gauge_inner_radius)
-	inner_max_rad = math.asin((rpm_pivot_y-gauge_max_y+1)/gauge_inner_radius)
-	outer_min_rad = math.asin((rpm_pivot_y-gauge_min_y)/gauge_outer_radius)
-	outer_max_rad = math.asin((rpm_pivot_y-gauge_max_y+1)/gauge_outer_radius)
+	inner_min_rad = math.asin((clutch_gauge_root_y-clutch_gauge_min_y)/clutch_gauge_inner_radius)
+	inner_max_rad = math.asin((clutch_gauge_root_y-clutch_gauge_max_y+1)/clutch_gauge_inner_radius)
+	outer_min_rad = math.asin((clutch_gauge_root_y-clutch_gauge_min_y)/clutch_gauge_outer_radius)
+	outer_max_rad = math.asin((clutch_gauge_root_y-clutch_gauge_max_y+1)/clutch_gauge_outer_radius)
 	for i in range(0,int((1-ac.getCarState(0,acsys.CS.Clutch))*100),1):
 		# p1 = inner, p2 = outer
 		# p3 = inner, p4 = outer
-		rad1 = (inner_max_rad-inner_min_rad)/100*(100-i)     - inner_max_rad + math.pi
-		rad2 = (outer_max_rad-outer_min_rad)/100*(100-i)     - outer_max_rad + math.pi
-		rad3 = (inner_max_rad-inner_min_rad)/100*(100 - i+1) - inner_max_rad + math.pi
-		rad4 = (outer_max_rad-outer_min_rad)/100*(100 - i+1) - outer_max_rad + math.pi
+		rad1 = (inner_max_rad-inner_min_rad)/100*(100-i)     - inner_max_rad + (math.pi if clutch_gauge_right else 0)
+		rad2 = (outer_max_rad-outer_min_rad)/100*(100-i)     - outer_max_rad + (math.pi if clutch_gauge_right else 0)
+		rad3 = (inner_max_rad-inner_min_rad)/100*(100 - i+1) - inner_max_rad + (math.pi if clutch_gauge_right else 0)
+		rad4 = (outer_max_rad-outer_min_rad)/100*(100 - i+1) - outer_max_rad + (math.pi if clutch_gauge_right else 0)
 		
-		p1_x = math.cos(rad1)*gauge_inner_radius + rpm_pivot_x
-		p1_y = rpm_pivot_y - math.sin(rad1)*gauge_inner_radius
-		p2_x = math.cos(rad2)*gauge_outer_radius + rpm_pivot_x
-		p2_y = rpm_pivot_y - math.sin(rad2)*gauge_outer_radius
-		p3_x = math.cos(rad3)*gauge_inner_radius + rpm_pivot_x
-		p3_y = rpm_pivot_y - math.sin(rad3)*gauge_inner_radius
-		p4_x = math.cos(rad4)*gauge_outer_radius + rpm_pivot_x
-		p4_y = rpm_pivot_y - math.sin(rad4)*gauge_outer_radius
+		p1_x = math.cos(rad1)*clutch_gauge_inner_radius + clutch_gauge_root_x
+		p1_y = clutch_gauge_root_y - math.sin(rad1)*clutch_gauge_inner_radius
+		p2_x = math.cos(rad2)*clutch_gauge_outer_radius + clutch_gauge_root_x
+		p2_y = clutch_gauge_root_y - math.sin(rad2)*clutch_gauge_outer_radius
+		p3_x = math.cos(rad3)*clutch_gauge_inner_radius + clutch_gauge_root_x
+		p3_y = clutch_gauge_root_y - math.sin(rad3)*clutch_gauge_inner_radius
+		p4_x = math.cos(rad4)*clutch_gauge_outer_radius + clutch_gauge_root_x
+		p4_y = clutch_gauge_root_y - math.sin(rad4)*clutch_gauge_outer_radius
 		
 		ac.glBegin(2)
 		ac.glColor4f(clutch_gauge_color[0],clutch_gauge_color[1],clutch_gauge_color[2],clutch_gauge_color[3])
