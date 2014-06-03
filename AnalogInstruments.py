@@ -67,6 +67,7 @@ def acMain(ac_version):
 	global telemetry_client
 	global draw_abs_status, draw_tcs_status, abs_label, abs_off_label, tcs_label, tcs_off_label
 	global gear_x, gear_y, shift_light_x, shift_light_y, shift_light_radius, gear_width, gear_height
+	global tach_min_angle, tach_max_angle, speedo_min_angle, speedo_max_angle
 	config_file = configparser.ConfigParser()
 	config_file.read('apps/python/AnalogInstruments/settings.ini')
 	config = config_file[config_file['settings']['theme']]
@@ -126,6 +127,10 @@ def acMain(ac_version):
 	speedo_tl_y         = int(config['digi_speedo_y'])
 	speedo_total_width  = int(config['digi_speedo_width'])
 	speedo_total_height = int(config['digi_speedo_height'])
+	tach_min_angle      = int(config['tach_min_angle'])
+	tach_max_angle      = int(config['tach_max_angle'])
+	speedo_min_angle    = int(config['speedo_min_angle'])
+	speedo_max_angle    = int(config['speedo_max_angle'])
 
 	tach_redline_color = parse_color(config['tach_redline_color'])
 	tach_bigline_color = parse_color(config['tach_bigline_color'])
@@ -404,19 +409,17 @@ def drawFuelGauge():
 	ac.glEnd()
 
 def drawTachometer(deltaT):
-	global posting, post_time_elapsed, post_total_time
 	rpm = ac.getCarState(0,acsys.CS.RPM)
 	# degree range: 190..-10
-	rpm_deg = 190 - (rpm/indicated_max_rpm)*200.0
-	if posting:
-		rpm_deg = 190 - 200*math.sin((post_time_elapsed/post_total_time)*math.pi)
+	r = abs(tach_min_angle - tach_max_angle)
+	rpm_deg = tach_max_angle - (rpm/indicated_max_rpm)*r
 	rpm_rad = math.radians(rpm_deg)
 	# Redline
 	redline_start = (max_rpm - 500) - (max_rpm % 250)
 	for i in range(0,indicated_max_rpm+1,250):
 		if i >= redline_start and i+250 <= indicated_max_rpm:
-			rad1 = math.radians(190 - (i/indicated_max_rpm)*200.0)
-			rad2 = math.radians(190 - ((i+250)/indicated_max_rpm)*200.0)
+			rad1 = math.radians(tach_max_angle - (i/indicated_max_rpm)*r)
+			rad2 = math.radians(tach_max_angle - ((i+250)/indicated_max_rpm)*r)
 			p1_x = math.cos(rad1)*tach_radius+rpm_pivot_x
 			p1_y = -math.sin(rad1)*tach_radius+rpm_pivot_y
 			p2_x = math.cos(rad1)*(tach_radius*9/10)+rpm_pivot_x
@@ -438,7 +441,7 @@ def drawTachometer(deltaT):
 			ac.glVertex2f(p4_x,p4_y)
 			ac.glEnd()
 		if i % 1000 == 0:
-			rad  = math.radians(190 - (i/indicated_max_rpm)*200.0)
+			rad  = math.radians(tach_max_angle - (i/indicated_max_rpm)*r)
 			p1_x = math.cos(rad)*tach_radius+rpm_pivot_x
 			p1_y = -math.sin(rad)*tach_radius+rpm_pivot_y
 			p2_x = math.cos(rad)*(tach_radius*4/5)+rpm_pivot_x
@@ -449,7 +452,7 @@ def drawTachometer(deltaT):
 			ac.glVertex2f(p2_x,p2_y)
 			ac.glEnd()
 		elif i % 250 == 0 and i != 0:
-			rad  = math.radians(190 - (i/indicated_max_rpm)*200.0)
+			rad  = math.radians(tach_max_angle - (i/indicated_max_rpm)*r)
 			p1_x = math.cos(rad)*tach_radius+rpm_pivot_x
 			p1_y = -math.sin(rad)*tach_radius+rpm_pivot_y
 			p2_x = math.cos(rad)*(tach_radius*9.25/10)+rpm_pivot_x
@@ -487,18 +490,16 @@ def drawTachometer(deltaT):
 	ac.glEnd()
 
 def drawSpeedometer():
-	global posting, post_time_elapsed, post_total_time
 	speed = ac.getCarState(0,acsys.CS.DriveTrainSpeed)/dt_ratio #Drivetrain speed seems to be about 75-90% of the real speed wtf
 	if imperial:
 		speed = speed / 1.632
 	# degree range: 190..-10
-	speed_deg = 190 - (speed/indicated_max_speed)*200.0
-	if posting:
-		speed_deg = 190 - 200*math.sin((post_time_elapsed/post_total_time)*math.pi)
+	r = abs(speedo_min_angle - speedo_max_angle)
+	speed_deg = speedo_max_angle - (speed/indicated_max_speed)*r
 	speed_rad = math.radians(speed_deg)
 	for i in range(0,indicated_max_speed+1,5):
 		if i % 20 == 0:
-			rad  = math.radians(190 - (i/indicated_max_speed)*200.0)
+			rad  = math.radians(speedo_max_angle - (i/indicated_max_speed)*r)
 			p1_x = math.cos(rad)*speedo_radius+speed_pivot_x
 			p1_y = -math.sin(rad)*speedo_radius+speed_pivot_y
 			p2_x = math.cos(rad)*(speedo_radius*4/5)+speed_pivot_x
@@ -509,7 +510,7 @@ def drawSpeedometer():
 			ac.glVertex2f(p2_x,p2_y)
 			ac.glEnd()
 		elif i % 5 == 0 and i != 0:
-			rad  = math.radians(190 - (i/indicated_max_speed)*200.0)
+			rad  = math.radians(speedo_max_angle - (i/indicated_max_speed)*r)
 			p1_x = math.cos(rad)*speedo_radius+speed_pivot_x
 			p1_y = -math.sin(rad)*speedo_radius+speed_pivot_y
 			p2_x = math.cos(rad)*(speedo_radius*9.25/10)+speed_pivot_x
@@ -1003,6 +1004,7 @@ def acUpdate(deltaT):
 	if debug_mode:
 		ac.setText(debug_label,"%s %s %s %s %s %s" % (telemetry_client.abs_enabled,telemetry_client.abs_in_action,telemetry_client.tc_enabled,telemetry_client.tc_in_action,telemetry_client.in_pit,telemetry_client.limiter))
 	if have_setup == 0:
+		max_rpm = sim_info.static.maxRpm
 		telemetry_client.connect()
 		carinfo_file = configparser.ConfigParser()
 		carinfo_file.read("apps/python/AnalogInstruments/carinfo.ini")
@@ -1053,11 +1055,11 @@ def acUpdate(deltaT):
 		
 		if draw_tachometer:
 			# Tach setup
-			max_rpm = sim_info.static.maxRpm
 			indicated_max_rpm = max_rpm + 1000 - (max_rpm % 1000)
 			# Tach labels
 			for i in range(0,indicated_max_rpm+1,1000):
-				rad  = math.radians(190 - (i/indicated_max_rpm)*200.0)
+				r = abs(tach_min_angle - tach_max_angle)
+				rad  = math.radians(tach_max_angle - (i/indicated_max_rpm)*r)
 				label = ac.addLabel(window," ")
 				ac.setText(label,"%d" % (i/1000))
 				x_offset = 0
@@ -1072,7 +1074,8 @@ def acUpdate(deltaT):
 				indicated_max_speed = int(indicated_max_speed/1.6) #TODO: round up to multiple of 20
 			# Speedo labels
 			for i in range(0,indicated_max_speed+1,20):
-				rad = math.radians(190 - (i/indicated_max_speed)*200.0)
+				r = abs(speedo_min_angle - speedo_max_angle)
+				rad = math.radians(speedo_max_angle - (i/indicated_max_speed)*r)
 				label = ac.addLabel(window," ")
 				ac.setText(label,"%d" % i)
 				x_offset = 0
