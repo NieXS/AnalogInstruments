@@ -1,5 +1,5 @@
 ﻿"""
-Analog Instruments version 0.2
+Analog Instruments version 1.0
 By NieXS
 
 I'd like to thank Nyowa225 for making his glorious RevHunter app, which allowed
