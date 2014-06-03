@@ -66,6 +66,7 @@ def acMain(ac_version):
 	global config
 	global telemetry_client
 	global draw_abs_status, draw_tcs_status, abs_label, abs_off_label, tcs_label, tcs_off_label
+	global gear_x, gear_y, shift_light_x, shift_light_y, shift_light_radius, gear_width, gear_height
 	config_file = configparser.ConfigParser()
 	config_file.read('apps/python/AnalogInstruments/settings.ini')
 	config = config_file[config_file['settings']['theme']]
@@ -164,6 +165,14 @@ def acMain(ac_version):
 	g_meter_x_anchor = int(config['g_meter_x_anchor'])
 	g_meter_y_anchor = int(config['g_meter_y_anchor'])
 	g_meter_opacity = float(config['g_meter_opacity'])
+	
+	gear_x = int(config['gear_x'])
+	gear_y = int(config['gear_y'])
+	gear_width = int(config['gear_width'])
+	gear_height = int(config['gear_height'])
+	shift_light_x = int(config['shift_light_x'])
+	shift_light_y = int(config['shift_light_y'])
+	shift_light_radius = int(config['shift_light_radius'])
 
 	# Kind of configurable but you'll have change most of the dimensions above so not recommended
 	window_width  = int(config['window_width'])
@@ -1118,9 +1127,9 @@ def onWindowRender(deltaT):
 		drawSpeedometer()
 	# Shift light
 	if draw_shift_light:
-		sl_center_x = speedo_tl_x+2.5*(speedo_total_width/3)
-		sl_center_y = speedo_tl_y-speedo_total_height/2
-		sl_radius   = 15
+		sl_center_x = shift_light_x
+		sl_center_y = shift_light_y
+		sl_radius   = shift_light_radius
 		if sl_timer > 0.1:
 			shift_light_drawn = not shift_light_drawn
 			sl_timer = 0
@@ -1149,7 +1158,7 @@ def onWindowRender(deltaT):
 			digit = "R"
 		if posting:
 			digit = "8"
-		drawNineSegment(speedo_tl_x+speedo_total_width/3,speedo_tl_y-speedo_total_height,speedo_total_width/3,speedo_total_height,digit,gear_color,gear_background)
+		drawNineSegment(gear_x,gear_y,gear_width,gear_height,digit,gear_color,gear_background)
 	# Digital speedo
 	if draw_digital_speedo:
 		# First Digit
