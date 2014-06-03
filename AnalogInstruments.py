@@ -65,6 +65,7 @@ def acMain(ac_version):
 	global fuel_warning_label
 	global config
 	global telemetry_client
+	global draw_abs_status, draw_tcs_status, abs_label, abs_off_label, tcs_label, tcs_off_label
 	config_file = configparser.ConfigParser()
 	config_file.read('apps/python/AnalogInstruments/settings.ini')
 	config = config_file[config_file['settings']['theme']]
@@ -108,6 +109,8 @@ def acMain(ac_version):
 	draw_clutch_gauge   = config.getboolean('draw_clutch_gauge')
 	draw_tyre_monitor   = config.getboolean('draw_tyre_monitor')
 	draw_background     = config.getboolean('draw_background')
+	draw_abs_status     = config.getboolean('draw_abs_status')
+	draw_tcs_status     = config.getboolean('draw_tcs_status')
 
 	# Dimensions of things, mess with those at your own risk
 	tach_needle_end     = int(config['tach_needle_end'])
@@ -167,6 +170,10 @@ def acMain(ac_version):
 	window_height = int(config['window_height'])
 	background_image_path = config['background_path']
 	background_image_path_noboost = config['background_noboost_path']
+	abs_img = config['abs_img']
+	abs_off_img = config['abs_off_img']
+	tcs_img = config['tcs_img']
+	tcs_off_img = config['tcs_off_img']
 	window = ac.newApp("AnalogInstruments")
 	ac.setTitle(window," ")
 	ac.setBackgroundOpacity(window,0)
@@ -203,6 +210,24 @@ def acMain(ac_version):
 		ac.setSize(fuel_warning_label,12,14)
 		ac.setPosition(fuel_warning_label,fuel_pivot_x - 6,fuel_pivot_y - 30)
 		ac.setBackgroundTexture(fuel_warning_label,fuel_icon_warning_path)
+	if draw_abs_status:
+		abs_label = ac.addLabel(window,"")
+		ac.setSize(abs_label,window_width,window_height)
+		ac.setPosition(abs_label,0,0)
+		ac.setBackgroundTexture(abs_label,abs_img)
+		abs_off_label = ac.addLabel(window,"")
+		ac.setSize(abs_off_label,window_width,window_height)
+		ac.setPosition(abs_off_label,0,0)
+		ac.setBackgroundTexture(abs_off_label,abs_off_img)
+	if draw_tcs_status:
+		tcs_label = ac.addLabel(window,"")
+		ac.setSize(tcs_label,window_width,window_height)
+		ac.setPosition(tcs_label,0,0)
+		ac.setBackgroundTexture(tcs_label,tcs_img)
+		tcs_off_label = ac.addLabel(window,"")
+		ac.setSize(tcs_off_label,window_width,window_height)
+		ac.setPosition(tcs_off_label,0,0)
+		ac.setBackgroundTexture(tcs_off_label,tcs_off_img)
 	return "Analog Instruments"
 
 def acShutdown():
@@ -1056,6 +1081,27 @@ def onWindowRender(deltaT):
 	global tach_radius, rpm_pivot_x, rpm_pivot_y, speedo_radius, speed_pivot_x, speed_pivot_y
 	global speedo_tl_x, speedo_tl_y, speedo_total_width, speedo_total_height, gear_color, gear_background, speedo_color, speedo_background
 	global posting, post_time_elapsed
+	global abs_label, abs_off_label, tcs_label, tcs_off_label
+	global draw_abs_status, draw_tcs_status
+	global telemetry_client
+	if draw_abs_status:
+		if telemetry_client.abs_enabled:
+			ac.setPosition(abs_off_label,-10000,-10000)
+		else:
+			ac.setPosition(abs_off_label,0,0)
+		if telemetry_client.abs_in_action:
+			ac.setPosition(abs_label,0,0)
+		else:
+			ac.setPosition(abs_label,-10000,-10000)
+	if draw_tcs_status:
+		if telemetry_client.tc_enabled:
+			ac.setPosition(tcs_off_label,-10000,-10000)
+		else:
+			ac.setPosition(tcs_off_label,0,0)
+		if telemetry_client.tc_in_action:
+			ac.setPosition(tcs_label,0,0)
+		else:
+			ac.setPosition(tcs_label,-10000,-10000)
 	if posting:
 		post_time_elapsed = post_time_elapsed + deltaT
 	if post_time_elapsed > post_total_time:
