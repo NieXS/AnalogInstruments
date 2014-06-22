@@ -774,10 +774,13 @@ def drawGMeter():
 		offset = 0
 		if i == 0 or i == 1 or i == 9 or i == 10:
 			c = c4
-			offset = 3
-		elif i == 2 or i == 3 or i == 7 or i == 8:
+			offset = 4
+		elif i == 2 or i == 8:
 			c = c3
 			offset = 2
+		elif i == 3 or i == 7:
+			c = c3
+			offset = 1
 		elif i == 4 or i == 6:
 			c = c2
 			offset = 1
