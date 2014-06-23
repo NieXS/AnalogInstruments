@@ -1,5 +1,5 @@
 ﻿"""
-Analog Instruments version 1.0
+Analog Instruments version 1.1
 By NieXS
 
 I'd like to thank Nyowa225 for making his glorious RevHunter app, which allowed
@@ -1021,7 +1021,7 @@ def acUpdate(deltaT):
 	if have_setup:
 		telemetry_client.tick()
 	if debug_mode:
-		ac.setText(debug_label,"%s %s %s %s %s %s" % (telemetry_client.abs_enabled,telemetry_client.abs_in_action,telemetry_client.tc_enabled,telemetry_client.tc_in_action,telemetry_client.in_pit,telemetry_client.limiter))
+		ac.setText(debug_label,"%d" % sim_info.static.maxRpm)
 	if have_setup == 0:
 		max_rpm = sim_info.static.maxRpm
 		telemetry_client.connect()
