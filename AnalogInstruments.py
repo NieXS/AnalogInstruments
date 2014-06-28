@@ -1021,15 +1021,22 @@ def acUpdate(deltaT):
 	if have_setup:
 		telemetry_client.tick()
 	if debug_mode:
-		ac.setText(debug_label,"%d" % sim_info.static.maxRpm)
+		ac.setText(debug_label,"%2.2f" % (ac.getCarState(0,acsys.CS.DriveTrainSpeed)/ac.getCarState(0,acsys.CS.SpeedKMH)))
 	if have_setup == 0:
 		max_rpm = sim_info.static.maxRpm
 		telemetry_client.connect()
 		carinfo_file = configparser.ConfigParser()
 		carinfo_file.read("apps/python/AnalogInstruments/carinfo.ini")
-		dt_ratio = float(carinfo_file[ac.getCarName(0)]['ratio'])
-		indicated_max_speed = int(carinfo_file[ac.getCarName(0)]['top_speed'])
-		if (not carinfo_file[ac.getCarName(0)].getboolean('has_turbo') or not draw_boost_gauge) and draw_background:
+		if carinfo_file.has_section(ac.getCarName(0)):
+			dt_ratio = float(carinfo_file[ac.getCarName(0)]['ratio'])
+			indicated_max_speed = int(carinfo_file[ac.getCarName(0)]['top_speed'])
+			has_turbo = carinfo_file[ac.getCarName(0)].getboolean('has_turbo')
+		else:
+			ac.console("Car %s isn't in carinfo.ini!" % ac.getCarName(0))
+			dt_ratio = 1
+			indicated_max_speed = 320
+			has_turbo = True
+		if (not has_turbo or not draw_boost_gauge) and draw_background:
 			ac.setBackgroundTexture(window,background_image_path_noboost)
 			draw_boost_gauge = False
 		# Max fuel
