@@ -72,9 +72,12 @@ def acMain(ac_version):
 	global gear_x, gear_y, shift_light_x, shift_light_y, shift_light_radius, gear_width, gear_height
 	global tach_min_angle, tach_max_angle, speedo_min_angle, speedo_max_angle
 	global shift_light_on_color, shift_light_off_color
+	global rpms_file
 	config_file = configparser.ConfigParser()
 	config_file.read('apps/python/AnalogInstruments/settings.ini')
 	config = config_file[config_file['settings']['theme']]
+	rpms_file = configparser.ConfigParser()
+	rpms_file.read('apps/python/AnalogInstruments/rpms.ini')
 
 	# SETTINGS #
 
@@ -1017,6 +1020,7 @@ def acUpdate(deltaT):
 	global rpm_pivot_x, rpm_pivot_y, speed_pivot_x, speed_pivot_y, tach_radius, speedo_radius, max_fuel
 	global fuel_warning_label, dt_ratio
 	global draw_boost_gauge
+	global rpms_file
 	ac.setBackgroundOpacity(window,0)
 	if have_setup:
 		telemetry_client.tick()
@@ -1024,6 +1028,20 @@ def acUpdate(deltaT):
 		ac.setText(debug_label,"%2.2f" % (ac.getCarState(0,acsys.CS.DriveTrainSpeed)/ac.getCarState(0,acsys.CS.SpeedKMH)))
 	if have_setup == 0:
 		max_rpm = sim_info.static.maxRpm
+		ac.console("Maximum RPM for car %s: %d" %(ac.getCarName(0),max_rpm))
+		if max_rpm < 500:
+			if rpms_file.has_section(ac.getCarName(0)):
+				max_rpm = int(rpms_file[ac.getCarName(0)]['max_rpm'])
+			else:
+				ac.console("Don't know max RPMs for this car, go play with it in practice mode first!")
+				max_rpm = 20000
+		else:
+			if not rpms_file.has_section(ac.getCarName(0)):
+				rpms_file.add_section(ac.getCarName(0))
+			rpms_file[ac.getCarName(0)]['max_rpm'] = str(max_rpm)
+			with open('apps/python/AnalogInstruments/rpms.ini','w') as file:
+				rpms_file.write(file)
+			ac.console("Learned max RPM for this car")
 		telemetry_client.connect()
 		carinfo_file = configparser.ConfigParser()
 		carinfo_file.read("apps/python/AnalogInstruments/carinfo.ini")
