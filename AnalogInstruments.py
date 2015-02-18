@@ -327,8 +327,8 @@ def drawBoostGauge():
 		ac.glBegin(2)
 		ac.glColor4f(boost_bar_color[0],boost_bar_color[1],boost_bar_color[2],boost_bar_color[3])
 		ac.glVertex2f(p3_x,p3_y)
-		ac.glVertex2f(p4_x,p4_y)
 		ac.glVertex2f(p2_x,p2_y)
+		ac.glVertex2f(p4_x,p4_y)
 		ac.glEnd()
 	# Needle
 	rad = math.pi - rad
@@ -350,14 +350,14 @@ def drawBoostGauge():
 	ac.glBegin(2)
 	ac.glColor4f(boost_needle_color[0],boost_needle_color[1],boost_needle_color[2],boost_needle_color[3])
 	ac.glVertex2f(p1_x,p1_y)
-	ac.glVertex2f(p2_x,p2_y)
 	ac.glVertex2f(p3_x,p3_y)
+	ac.glVertex2f(p4_x,p4_y)
 	ac.glEnd()
 	ac.glBegin(2)
 	ac.glColor4f(boost_needle_color[0],boost_needle_color[1],boost_needle_color[2],boost_needle_color[3])
-	ac.glVertex2f(p2_x,p2_y)
-	ac.glVertex2f(p3_x,p3_y)
+	ac.glVertex2f(p1_x,p1_y)
 	ac.glVertex2f(p4_x,p4_y)
+	ac.glVertex2f(p2_x,p2_y)
 	ac.glEnd()
 
 def drawFuelGauge():
@@ -394,8 +394,8 @@ def drawFuelGauge():
 		ac.glBegin(2)
 		ac.glColor4f(fuel_bar_color[0],fuel_bar_color[1],fuel_bar_color[2],fuel_bar_color[3])
 		ac.glVertex2f(p3_x,p3_y)
-		ac.glVertex2f(p4_x,p4_y)
 		ac.glVertex2f(p2_x,p2_y)
+		ac.glVertex2f(p4_x,p4_y)
 		ac.glEnd()
 	# Needle
 	rad = math.pi - rad
@@ -417,14 +417,14 @@ def drawFuelGauge():
 	ac.glBegin(2)
 	ac.glColor4f(fuel_needle_color[0],fuel_needle_color[1],fuel_needle_color[2],fuel_needle_color[3])
 	ac.glVertex2f(p1_x,p1_y)
-	ac.glVertex2f(p2_x,p2_y)
 	ac.glVertex2f(p3_x,p3_y)
+	ac.glVertex2f(p4_x,p4_y)
 	ac.glEnd()
 	ac.glBegin(2)
 	ac.glColor4f(fuel_needle_color[0],fuel_needle_color[1],fuel_needle_color[2],fuel_needle_color[3])
-	ac.glVertex2f(p2_x,p2_y)
-	ac.glVertex2f(p3_x,p3_y)
+	ac.glVertex2f(p1_x,p1_y)
 	ac.glVertex2f(p4_x,p4_y)
+	ac.glVertex2f(p2_x,p2_y)
 	ac.glEnd()
 
 def drawTachometer(deltaT):
@@ -455,8 +455,9 @@ def drawTachometer(deltaT):
 			ac.glEnd()
 			ac.glBegin(2)
 			ac.glColor4f(tach_redline_color[0],tach_redline_color[1],tach_redline_color[2],tach_redline_color[3])
-			ac.glVertex2f(p2_x,p2_y)
+			#ac.glColor4f(1,1,1,1)
 			ac.glVertex2f(p3_x,p3_y)
+			ac.glVertex2f(p2_x,p2_y)
 			ac.glVertex2f(p4_x,p4_y)
 			ac.glEnd()
 		if i % 1000 == 0:
@@ -503,7 +504,8 @@ def drawTachometer(deltaT):
 	ac.glEnd()
 	ac.glBegin(2)
 	ac.glColor4f(tach_needle_color1[0],tach_needle_color1[1],tach_needle_color1[2],tach_needle_color1[3])
-	ac.glVertex2f(rpm_p1_x,rpm_p1_y)
+	#ac.glColor4f(1,1,1,1)
+	ac.glVertex2f(rpm_p2_x,rpm_p2_y)
 	ac.glVertex2f(rpm_end_p2_x,rpm_end_p2_y)
 	ac.glVertex2f(rpm_end_p1_x,rpm_end_p1_y)
 	ac.glEnd()
@@ -556,14 +558,14 @@ def drawSpeedometer():
 	ac.glBegin(2)
 	ac.glColor4f(speedo_needle_color1[0],speedo_needle_color1[1],speedo_needle_color1[2],speedo_needle_color1[3])
 	ac.glVertex2f(speed_p1_x,speed_p1_y)
-	ac.glVertex2f(speed_p2_x,speed_p2_y)
 	ac.glVertex2f(speed_end_p1_x,speed_end_p1_y)
+	ac.glVertex2f(speed_end_p2_x,speed_end_p2_y)
 	ac.glEnd()
 	ac.glBegin(2)
 	ac.glColor4f(speedo_needle_color1[0],speedo_needle_color1[1],speedo_needle_color1[2],speedo_needle_color1[3])
 	ac.glVertex2f(speed_p1_x,speed_p1_y)
 	ac.glVertex2f(speed_end_p2_x,speed_end_p2_y)
-	ac.glVertex2f(speed_end_p1_x,speed_end_p1_y)
+	ac.glVertex2f(speed_p2_x,speed_p2_y)
 	ac.glEnd()
 
 def drawTyreMonitor():
@@ -675,8 +677,8 @@ def drawBrakeGauge():
 		ac.glBegin(2)
 		ac.glColor4f(brake_gauge_color[0],brake_gauge_color[1],brake_gauge_color[2],brake_gauge_color[3])
 		ac.glVertex2f(p3_x,p3_y)
-		ac.glVertex2f(p4_x,p4_y)
 		ac.glVertex2f(p2_x,p2_y)
+		ac.glVertex2f(p4_x,p4_y)
 		ac.glEnd()
 
 def drawThrottleGauge():
@@ -711,8 +713,8 @@ def drawThrottleGauge():
 		ac.glBegin(2)
 		ac.glColor4f(throttle_gauge_color[0],throttle_gauge_color[1],throttle_gauge_color[2],throttle_gauge_color[3])
 		ac.glVertex2f(p3_x,p3_y)
-		ac.glVertex2f(p4_x,p4_y)
 		ac.glVertex2f(p2_x,p2_y)
+		ac.glVertex2f(p4_x,p4_y)
 		ac.glEnd()
 
 def drawClutchGauge():
@@ -747,8 +749,8 @@ def drawClutchGauge():
 		ac.glBegin(2)
 		ac.glColor4f(clutch_gauge_color[0],clutch_gauge_color[1],clutch_gauge_color[2],clutch_gauge_color[3])
 		ac.glVertex2f(p3_x,p3_y)
-		ac.glVertex2f(p4_x,p4_y)
 		ac.glVertex2f(p2_x,p2_y)
+		ac.glVertex2f(p4_x,p4_y)
 		ac.glEnd()
 
 def drawGMeter():
@@ -810,14 +812,15 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 	ac.glBegin(2)
 	ac.glColor4f(background[0],background[1],background[2],background[3])
 	ac.glVertex2f(x,y)
-	ac.glVertex2f(x+x_size,y)
 	ac.glVertex2f(x+x_size,y+y_size)
+	ac.glVertex2f(x+x_size,y)
 	ac.glEnd()
 	ac.glBegin(2)
 	ac.glColor4f(background[0],background[1],background[2],background[3])
-	ac.glVertex2f(x,y)
+	#ac.glColor4f(1,1,1,1)
 	ac.glVertex2f(x,y+y_size)
 	ac.glVertex2f(x+x_size,y+y_size)
+	ac.glVertex2f(x,y)
 	ac.glEnd()
 	# 2px padding
 	root_x = x + 2
@@ -874,8 +877,8 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 				ac.glBegin(2)
 				ac.glColor4f(colors[0],colors[1],colors[2],colors[3])
 				ac.glVertex2f(lt_x,tr_y)
-				ac.glVertex2f(l_x,t_y)
 				ac.glVertex2f(l_x,b_y)
+				ac.glVertex2f(l_x,t_y)
 				ac.glEnd()
 				# Right
 				ac.glBegin(2)
@@ -895,8 +898,8 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 				ac.glBegin(2)
 				ac.glColor4f(colors[0],colors[1],colors[2],colors[3])
 				ac.glVertex2f(l_x,b_y)
-				ac.glVertex2f(r_x,t_y)
 				ac.glVertex2f(r_x,b_y)
+				ac.glVertex2f(r_x,t_y)
 				ac.glEnd()
 			elif i == 2 or i == 3 or i == 5 or i == 6:
 				# (2 and 3) and (5 and 6) have same X coords
@@ -941,8 +944,8 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 				# Bottom
 				ac.glBegin(2)
 				ac.glColor4f(colors[0],colors[1],colors[2],colors[3])
-				ac.glVertex2f(tr_x,bt_y)
 				ac.glVertex2f(l_x,b_y)
+				ac.glVertex2f(tr_x,bt_y)
 				ac.glVertex2f(r_x,b_y)
 				ac.glEnd()
 				# Middle top lt lb rt
@@ -956,8 +959,8 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 				ac.glBegin(2)
 				ac.glColor4f(colors[0],colors[1],colors[2],colors[3])
 				ac.glVertex2f(l_x,b_y)
-				ac.glVertex2f(r_x,t_y)
 				ac.glVertex2f(r_x,b_y)
+				ac.glVertex2f(r_x,t_y)
 				ac.glEnd()
 			elif i == 8: # Top diagonal
 				t1_x  = segment_height + segment_width/4
@@ -983,9 +986,9 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 				ac.glEnd()
 				ac.glBegin(2)
 				ac.glColor4f(colors[0],colors[1],colors[2],colors[3])
-				ac.glVertex2f(t2_x,t2_y)
-				ac.glVertex2f(b1_x,b_y)
 				ac.glVertex2f(b2_x,b_y)
+				ac.glVertex2f(b1_x,b_y)
+				ac.glVertex2f(t2_x,t2_y)
 				ac.glEnd()
 			elif i == 9: # Bottom diagonal
 				t_x  = segment_height*5
@@ -1003,15 +1006,16 @@ def drawNineSegment(x,y,x_size,y_size,digit,colors,background):
 				b_y  = b_y  + root_y
 				ac.glBegin(2)
 				ac.glColor4f(colors[0],colors[1],colors[2],colors[3])
-				ac.glVertex2f(t_x,t1_y)
 				ac.glVertex2f(t_x,t2_y)
+				ac.glVertex2f(t_x,t1_y)
 				ac.glVertex2f(b1_x,b_y)
 				ac.glEnd()
 				ac.glBegin(2)
 				ac.glColor4f(colors[0],colors[1],colors[2],colors[3])
-				ac.glVertex2f(t_x,t2_y)
+				#ac.glColor4f(1,1,1,1)
 				ac.glVertex2f(b1_x,b_y)
 				ac.glVertex2f(b2_x,b_y)
+				ac.glVertex2f(t_x,t2_y)
 				ac.glEnd()
 		i = i + 1
 
@@ -1043,12 +1047,18 @@ def acUpdate(deltaT):
 				rpms_file.write(file)
 			ac.console("Learned max RPM for this car")
 		telemetry_client.connect()
+		ac.log("Opening car info file")
 		carinfo_file = configparser.ConfigParser()
 		carinfo_file.read("apps/python/AnalogInstruments/carinfo.ini")
+		ac.log("Got car info file")
 		if carinfo_file.has_section(ac.getCarName(0)):
+			ac.log("Found car in file")
 			dt_ratio = float(carinfo_file[ac.getCarName(0)]['ratio'])
+			ac.log("Got ratio")
 			indicated_max_speed = int(carinfo_file[ac.getCarName(0)]['top_speed'])
+			ac.log("Got top speed")
 			has_turbo = carinfo_file[ac.getCarName(0)].getboolean('has_turbo')
+			ac.log("Got turbo")
 		else:
 			ac.console("Car %s isn't in carinfo.ini!" % ac.getCarName(0))
 			dt_ratio = 1
@@ -1058,9 +1068,11 @@ def acUpdate(deltaT):
 			ac.setBackgroundTexture(window,background_image_path_noboost)
 			draw_boost_gauge = False
 		# Max fuel
+		ac.log("Getting things from SHM")
 		max_fuel = sim_info.static.maxFuel
 		car_model = sim_info.static.carModel
-		compound  = str(sim_info.graphics._tyreCompound)
+		compound  = str(sim_info.graphics.tyreCompound)#FIXME
+		ac.log("Got things from SHM")
 		# Optimal tyre temp range as taken from that forum post
 		if "exos_125_s1" in car_model:
 			if "SuperSoft" in compound:
@@ -1096,7 +1108,7 @@ def acUpdate(deltaT):
 			tyre_optimal_temp = range(75,106)
 		elif "Hard" in compound:
 			tyre_optimal_temp = range(70,101)
-		
+		ac.log("Setting up tach")
 		if draw_tachometer:
 			# Tach setup
 			indicated_max_rpm = max_rpm + 1000 - (max_rpm % 1000)
@@ -1112,6 +1124,7 @@ def acUpdate(deltaT):
 					x_offset = 15 - math.sin(rad)*15
 					y_offset = math.cos(rad)*5
 				ac.setPosition(label,math.cos(rad)*(tach_radius*4/5)+rpm_pivot_x-x_offset,rpm_pivot_y - math.sin(rad)*(tach_radius*4/5)-y_offset)
+		ac.log("Setting up speedo")
 		if draw_speedometer:
 			# Speedo setup
 			if imperial:
@@ -1131,6 +1144,7 @@ def acUpdate(deltaT):
 		have_setup = 1
 
 def onWindowRender(deltaT):
+	ac.log("Rendering window")
 	global debug_label, indicated_max_rpm, max_rpm, indicated_max_speed, shift_light_drawn, sl_timer
 	global tach_radius, rpm_pivot_x, rpm_pivot_y, speedo_radius, speed_pivot_x, speed_pivot_y
 	global speedo_tl_x, speedo_tl_y, speedo_total_width, speedo_total_height, gear_color, gear_background, speedo_color, speedo_background

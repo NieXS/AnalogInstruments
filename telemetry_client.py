@@ -91,14 +91,19 @@ class InternalTelemetryClient:
 		ac.log("Sent :-)")
 		self.connected = True
 	def tick(self):
+		return #FIXME
+		ac.log("Ticking")
 		if not self.connected:
 			return
-		data, server = self.sock.recvfrom(max(ctypes.sizeof(HandshakerResponse),ctypes.sizeof(RTCarInfo)))
+		ac.log("Getting data")
+		data = self.sock.recvfrom(max(ctypes.sizeof(HandshakerResponse),ctypes.sizeof(RTCarInfo)))[0]
 		if not self.handshake_done:
+			ac.log("Sending handshake")
 			handshake = Handshaker(4,1,1)
 			self.sock.sendto(handshake.to_bytes(),self.address)
 			self.handshake_done = True
 		else:
+			ac.log("Getting raw data")
 			raw_data = RTCarInfo()
 			raw_data.from_bytes(data)
 			self.abs_enabled = raw_data.isAbsEnabled

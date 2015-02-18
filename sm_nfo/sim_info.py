@@ -27,7 +27,7 @@ WBR, Rombik :)
 import mmap
 import functools
 import ctypes
-from ctypes import c_int32, c_float, c_char
+from ctypes import c_int32, c_float, c_wchar
 
 
 AC_STATUS = c_int32
@@ -87,11 +87,10 @@ class SPageFileGraphic(ctypes.Structure):
         ('packetId', c_int32),
         ('status', AC_STATUS),
         ('session', AC_SESSION_TYPE),
-         # NOTE: if you want str instead bytes, access it without '_'
-        ('_currentTime', c_char * 15),
-        ('_lastTime', c_char * 15),
-        ('_bestTime', c_char * 15),
-        ('_split', c_char * 15),
+        ('currentTime', c_wchar * 15),
+        ('lastTime', c_wchar * 15),
+        ('bestTime', c_wchar * 15),
+        ('split', c_wchar * 15),
         ('completedLaps', c_int32),
         ('position', c_int32),
         ('iCurrentTime', c_int32),
@@ -103,7 +102,7 @@ class SPageFileGraphic(ctypes.Structure):
         ('currentSectorIndex', c_int32),
         ('lastSectorTime', c_int32),
         ('numberOfLaps', c_int32),
-        ('_tyreCompound', c_char * 33),
+        ('tyreCompound', c_wchar * 33),
 
         ('replayTimeMultiplier', c_float),
         ('normalizedCarPosition', c_float),
@@ -114,16 +113,16 @@ class SPageFileGraphic(ctypes.Structure):
 class SPageFileStatic(ctypes.Structure):
     _pack_ = 4
     _fields_ = [
-        ('_smVersion', c_char * 15),
-        ('_acVersion', c_char * 15),
+        ('_smVersion', c_wchar * 15),
+        ('_acVersion', c_wchar * 15),
         # session static info
         ('numberOfSessions', c_int32),
         ('numCars', c_int32),
-        ('_carModel', c_char * 33),
-        ('_track', c_char * 33),
-        ('_playerName', c_char * 33),
-        ('_playerSurname', c_char * 33),
-        ('_playerNick', c_char * 33),
+        ('carModel', c_wchar * 33),
+        ('track', c_wchar * 33),
+        ('playerName', c_wchar * 33),
+        ('playerSurname', c_wchar * 33),
+        ('playerNick', c_wchar * 33),
         ('sectorCount', c_int32),
 
         # car static info
@@ -134,17 +133,6 @@ class SPageFileStatic(ctypes.Structure):
         ('suspensionMaxTravel', c_float * 4),
         ('tyreRadius', c_float * 4),
     ]
-
-#make _char_p properties return unicode strings
-for cls in (SPageFilePhysics, SPageFileGraphic, SPageFileStatic):
-    for name, typ in cls._fields_:
-        if name.startswith("_"):
-            def getter(self, name=None):
-                value = getattr(self, name)
-                # TODO: real encoding is very strange, it's not utf-8
-                return value.decode("utf-8")
-            setattr(cls, name.lstrip("_"), 
-                    property(functools.partial(getter, name=name)))
 
 
 class SimInfo:
@@ -180,12 +168,10 @@ def do_test():
     for struct in info.static, info.graphics, info.physics:
         print(struct.__class__.__name__)
         for field, type_spec in struct._fields_:
-            if field.startswith("_"):
-                field = field[1:]
             value = getattr(struct, field)
             if not isinstance(value, (str, float, int)):
                 value = list(value)
-            print(" {} -> {}".format(field, value))
+            print(" {} -> {} {}".format(field, type(value), value))
 
 
 if __name__ == '__main__':
