@@ -1196,8 +1196,8 @@ def onWindowRender(deltaT):
 		for i in range(0,360,15):
 			ac.glBegin(2)
 			ac.glColor4f(color[0],color[1],color[2],color[3])
-			ac.glVertex2f(sl_center_x + math.cos(math.radians(i))*sl_radius,sl_center_y + math.sin(math.radians(i))*sl_radius)
 			ac.glVertex2f(sl_center_x + math.cos(math.radians(i+15))*sl_radius,sl_center_y + math.sin(math.radians(i+15))*sl_radius)
+			ac.glVertex2f(sl_center_x + math.cos(math.radians(i))*sl_radius,sl_center_y + math.sin(math.radians(i))*sl_radius)
 			ac.glVertex2f(sl_center_x,sl_center_y)
 			ac.glEnd()
 	# Gear
